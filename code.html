@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Forum Mall Bengaluru - Smart Services</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="https://mapplic.com/mapplic.css" />
+  <style>
+    body {
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    footer {
+      margin-top: auto; text-align: center; color: #667;
+      font-size: 0.97rem; padding: 28px 0 14px; background: #f0f4fa;
+    }
+    #mainChoice {
+      max-width: 600px; margin: 3.5rem auto 2rem auto; padding: 2rem 1.1rem;
+      background: #fff; border-radius: 1.2rem; box-shadow: 0 4px 32px rgba(32,58,120,0.1);
+      text-align: center; display: flex; flex-direction: column; gap: 1.7rem; align-items: center;
+    }
+    .service-blocks {
+      display: grid; grid-template-columns: 1fr; gap: 1.7rem; width: 100%;
+    }
+    @media (min-width: 600px) {
+      .service-blocks { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .service-block {
+      background: linear-gradient(135deg,#e4eefd 0%,#f9fafd 100%);
+      border-radius: 1.1rem; box-shadow: 0 2px 20px rgba(62,120,222,0.06);
+      padding: 2.3rem 1.3rem 1.6rem 1.3rem; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center;
+      border: 2px solid transparent; transition: border 0.17s, box-shadow 0.17s, transform 0.175s;
+      min-height: 170px; user-select: none;
+    }
+    .service-block:hover, .service-block:focus {
+      border: 2px solid #224183; box-shadow: 0 8px 32px rgba(32,58,120,0.17);
+      transform: translateY(-3px) scale(1.01); outline: none;
+    }
+    .service-icon { font-size: 2.2rem; margin-bottom: 1.1rem; color: #224183; opacity: 0.93; }
+    .service-title { font-size: 1.18rem; font-weight: 700; color: #23345a; margin-bottom: 0.2rem; }
+    .service-desc { color: #496397; font-size: 0.99rem; line-height: 1.38; }
+    .section { display: none; margin: 0 auto 40px auto; width: 100%; max-width: 1350px; padding: 0 1rem; }
+    .active-section { display: block; }
+    .module-frame { max-width: 100%; margin: 0 auto; }
+    .back-btn { display: inline-block; margin: 16px 0 8px 0; padding: 0.8em 1.8em;
+      background: #2057a4; color: #fff; border: none; border-radius: 0.5em;
+      font-size: 1.02rem; cursor: pointer; font-weight: 500; user-select: none; }
+    .back-btn:hover, .back-btn:focus { background: #4474cc; outline: none; }
+
+    /* Parking-specific styles */
+    #parkingSection .parking-container {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8fafb;
+      margin: 0;
+      padding: 0;
+    }
+    #parkingSection .hero { 
+      background:#224183; color:#fff; text-align:center; padding:2rem 1.2rem 1.2rem 1.2rem;
+      border-radius: 0.8rem; margin-bottom: 1.5rem;
+    }
+    #parkingSection .hero h1 { 
+      margin:0 0 0.5rem;font-size:2.1rem;font-weight:700;letter-spacing:0.07rem;
+    }
+    #parkingSection .hero p {margin:0;font-size:1.06rem;}
+    #parkingSection .main-content {
+      max-width:470px;margin:0 auto 2.5rem auto;background:#fff;border-radius:1rem;
+      box-shadow:0 4px 32px rgba(0,0,0,0.08);padding:1.3rem 1.4rem 2rem 1.4rem;
+      display:flex;flex-direction:column;gap:1.2rem;
+    }
+    #parkingSection .options-bar {
+      display:flex;justify-content:space-between;align-items:center;
+      gap:0.7rem;margin-bottom:0.8rem;flex-wrap:wrap;
+    }
+    #parkingSection .options-bar label {font-size:1rem;color:#224183;font-weight:600;}
+    #parkingSection select {
+      padding:0.39rem 0.6rem; border-radius:0.4rem; border:1px solid #b4cee5;
+      font-size:1rem; outline:none; background:#fff; min-width:110px;
+    }
+    #parkingSection .section-title {font-size:1.19rem;font-weight:650;margin-bottom:0.6rem;padding-bottom:0.3rem;
+      border-bottom:1px solid #dbe0ef;letter-spacing:0.04rem;}
+    #parkingSection .indicators{margin-bottom:0.7rem;display:flex;gap:0.85rem;flex-wrap:wrap;}
+    #parkingSection .indicator{display:flex;align-items:center;gap:0.34rem;font-size:0.95rem;}
+    #parkingSection .icon{width:18px;height:18px;display:inline-block;vertical-align:middle;}
+    #parkingSection #mallMap{width:100%;height:280px;border-radius:0.8rem;margin:0 auto;
+      box-shadow:0 2px 7px rgba(40,60,100,0.09);}
+    #parkingSection .spot-status-box {
+      margin: 1rem 0 0.5rem 0; font-size: 1rem; color: #224183; font-weight: 600;
+      min-height: 24px; display: flex; align-items: center; gap: 0.5rem;
+    }
+    #parkingSection .spot-status-box .icon {width:20px;height:20px;}
+    #parkingSection .booking-btn-row { display: flex; align-items: center; gap: 0.6rem; }
+    #parkingSection #bookSlotBtn[disabled] { background: #b8bfc9; cursor: not-allowed; opacity:0.7; }
+    #parkingSection #bookSlotBtn {
+      font-size:1rem; background:#224183; color:#fff; border:none;padding:0.87rem 2rem;
+      border-radius:0.54rem; cursor:pointer; margin-top:0;transition:background 0.15s;
+    }
+    #parkingSection #bookSlotBtn:hover { background: #3359a3; }
+    #parkingSection .booking-form-wrap {
+      margin-top:1.3rem; animation: fadeIn 0.2s; background: #f7faff;
+      border: 1px solid #d3e2fa; border-radius: 0.6rem; padding: 1.3rem 1rem 1.05rem 1rem;
+      box-shadow: 0 6px 20px rgba(40,70,120,0.08);
+    }
+    @keyframes fadeIn { from{ opacity:0; } to { opacity:1; } }
+    #parkingSection .booking-form input, #parkingSection .booking-form select {
+      width:96%;padding:0.6rem;margin-bottom:0.9rem;border:1px solid #dae0ed;
+      border-radius:0.3rem;font-size:1.05rem; font-family:inherit;
+    }
+    #parkingSection .booking-form label{display:block;font-size:1rem;margin-bottom:0.3rem;text-align:left;color:#224183;}
+    #parkingSection .booking-form button {
+      width: 100%; font-size:1.05rem; background:#224183; color:#fff; border:none;padding:0.8rem;
+      border-radius:0.45rem; cursor:pointer; font-weight:600; letter-spacing:0.06em;
+    }
+    #parkingSection .booking-form button:hover { background: #3359a3; }
+    #parkingSection .booking-success { color:#179d37; margin-top:1em; font-size:1.1rem; }
+    #parkingSection .cost-row {font-size:1.1rem;font-weight:600;color:#334b16;background:#e6ffeb;padding:0.5em 0.3em; border-radius:0.4rem;margin-bottom:0.7rem;}
+    #parkingSection .rates-section {
+      background:#f4f8fd;border-radius:0.7rem;padding:0.8rem 1.1rem 0.6rem 1.1rem; margin-bottom:0.2rem;
+    }
+    #parkingSection .rates-section-table{width:100%;border-collapse:collapse;font-size:0.97rem;}
+    #parkingSection .rates-section-table th, #parkingSection .rates-section-table td{border:1px solid #daecfb;padding:0.42rem 0.6rem;text-align:center;}
+    #parkingSection .rates-section-table th{background:#eaf3fe;color:#224183;font-weight:600;}
+    #parkingSection .parking-footer{background:#224183;color:#fff;text-align:center;padding:1rem 0;font-size:0.96rem;margin-top:2rem;}
+    @media (max-width: 600px){
+      #parkingSection .main-content{padding:0.45rem 0.08rem 1.1rem;}
+      #parkingSection .section-title{font-size:1rem;}
+      #parkingSection #mallMap{height:170px;}
+      #parkingSection .options-bar{justify-content:center;}
+      #parkingSection select{min-width:100px;font-size:0.97rem;}
+      #parkingSection .booking-form input, #parkingSection .booking-form select {font-size:0.97rem;}
+      #parkingSection .cost-row{font-size:1rem;}
+    }
+
+    /* Food Court styles */
+    #foodSection .food-container {
+      font-family: 'Playfair Display', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background-image: url('https://i.pinimg.com/1200x/75/13/e5/7513e527539574a47b6e8d7b219d9aa6.jpg'); 
+      background-size: cover; background-position: center center; background-repeat: no-repeat;
+      background-attachment: fixed; background-color: #1A362F;
+      color: #333333; line-height: 1.6; border-radius: 0.8rem; overflow: hidden;
+    }
+    #foodSection .food-header {
+      background-color: #1A362F; color: #F8F8F8; padding: 1rem 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    #foodSection .food-header h1 { margin: 0; color: #F8F8F8; }
+    #foodSection .food-nav button {
+      background-color: #D4AF37; color: #333333; border: none;
+      padding: 0.75rem 1.25rem; border-radius: 5px; cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; gap: 8px;
+      transition: background-color 0.3s ease;
+    }
+    #foodSection .food-nav button:hover { background-color: #B8860B; }
+    #foodSection #cart-item-count {
+      background-color: #B8860B; color: #333333; padding: 2px 8px;
+      border-radius: 50%; font-weight: bold; font-size: 0.85rem;
+    }
+    #foodSection .food-main {
+      padding: 2rem; max-width: 1200px; margin: 20px auto;
+      background-color: rgba(255, 255, 255, 0.9); border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    }
+    #foodSection .food-section { padding: 1rem 0; }
+    #foodSection .hidden-section { display: none; }
+    #foodSection .active-section { display: block; }
+    #foodSection h2 {
+      color: #6B0F1A; margin-bottom: 1.5rem; border-bottom: 2px solid #eee; padding-bottom: 10px;
+    }
+    #foodSection .grid-container {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
+    }
+    #foodSection .card {
+      background-color: #FFFFFF; border: 1px solid #ddd; border-radius: 8px;
+      padding: 1.5rem; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #333333;
+    }
+    #foodSection .card:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    #foodSection .card img {
+      max-width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 1rem;
+    }
+    #foodSection .card h3 { margin-top: 0; color: #1A362F; }
+    #foodSection .menu-grid-container {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;
+    }
+    #foodSection .menu-item-card {
+      background-color: #FFFFFF; border: 1px solid #eee; border-radius: 8px;
+      padding: 1rem; display: flex; gap: 15px; align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); color: #333333;
+    }
+    #foodSection .menu-item-card img {
+      width: 80px; height: 80px; object-fit: cover; border-radius: 5px;
+    }
+    #foodSection .item-details { flex-grow: 1; text-align: left; }
+    #foodSection .item-details h4 { margin: 0 0 5px 0; color: #555555; }
+    #foodSection .item-details p { margin: 0 0 10px 0; font-size: 0.9em; color: #555555; }
+    #foodSection .item-price { font-weight: bold; color: #6B0F1A; font-size: 1.1em; }
+    #foodSection .add-to-cart-btn {
+      background-color: #1A362F; color: white; border: none; padding: 8px 15px;
+      border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease;
+    }
+    #foodSection .add-to-cart-btn:hover { background-color: #2F4F4F; }
+    #foodSection .food-back-button {
+      background: linear-gradient(145deg, #333333, #444444); color: white; border: none;
+      padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer; margin-bottom: 1.5rem;
+      display: inline-flex; align-items: center; gap: 8px; font-size: 1rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); transition: all 0.3s ease;
+    }
+    #foodSection .food-back-button:hover {
+      background: linear-gradient(145deg, #555555, #333333); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+    }
+    #foodSection #cart-items .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px dashed #eee; color: #333333;
+    }
+    #foodSection #cart-items .cart-item:last-child { border-bottom: none; }
+    #foodSection .cart-item-info h4 { margin: 0; color: #555555; }
+    #foodSection .cart-item-actions button {
+      background-color: #6B0F1A; color: white; border: none; padding: 5px 10px;
+      border-radius: 3px; cursor: pointer; font-size: 0.9em;
+    }
+    #foodSection .cart-item-actions button.quantity-btn { background-color: #1A362F; }
+    #foodSection .cart-item-price { font-weight: bold; color: #6B0F1A; margin-left: 15px; }
+    #foodSection .cart-summary-section {
+      margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee; text-align: right;
+    }
+    #foodSection .cart-summary-section p {
+      font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #333333;
+    }
+    #foodSection .primary-button {
+      background-color: #6B0F1A; color: white; border: none; padding: 1rem 2rem;
+      border-radius: 5px; cursor: pointer; font-size: 1.1rem; transition: background-color 0.3s ease;
+    }
+    #foodSection .primary-button:hover { background-color: #8B0000; }
+    #foodSection #checkout-form label {
+      display: block; margin-bottom: 5px; font-weight: bold; color: #555555;
+    }
+    #foodSection #checkout-form input[type="text"], #foodSection #checkout-form input[type="tel"], #foodSection #checkout-form textarea {
+      width: calc(100% - 20px); padding: 10px; margin-bottom: 15px; border: 1px solid #ccc;
+      border-radius: 4px; font-size: 1rem; color: #333333;
+    }
+    #foodSection #checkout-form textarea { min-height: 80px; resize: vertical; }
+    #foodSection #checkout-total {
+      font-size: 1.4em; color: #6B0F1A; font-weight: bold; display: block;
+      margin-top: 20px; margin-bottom: 20px; text-align: right;
+    }
+    #foodSection .food-footer {
+      text-align: center; padding: 1.5rem; margin-top: 30px;
+      background-color: #1F2C3D; color: #F8F8F8; font-size: 0.9em;
+    }
+    #foodSection #empty-cart-message {
+      text-align: center; color: #555555; font-style: italic; margin-top: 20px; margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main menu -->
+  <div id="mainChoice" role="main" aria-label="Service selection">
+    <h1>Mall Mate</h1>
+    <p>Welcome! Choose a service below.</p>
+    <div class="service-blocks">
+      <div class="service-block" id="goParking" tabindex="0" role="button" aria-label="Parking and Booking">
+        <div class="service-icon">🚗</div>
+        <div class="service-title">Parking & Booking</div>
+        <div class="service-desc">Find and book your parking spot, including EV spots.</div>
+      </div>
+      <div class="service-block" id="goFood" tabindex="0" role="button" aria-label="Order Food">
+        <div class="service-icon">🍔</div>
+        <div class="service-title">Order Food</div>
+        <div class="service-desc">Browse shops and menus, place food orders instantly.</div>
+      </div>
+      <div class="service-block" id="goNav" tabindex="0" role="button" aria-label="Mall Navigation">
+        <div class="service-icon">🗺️</div>
+        <div class="service-title">Mall Navigation</div>
+        <div class="service-desc">Explore the interactive floor plan and find stores easily.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parking Section -->
+  <section id="parkingSection" class="section" aria-label="Parking Section">
+    <div class="module-frame">
+      <button class="back-btn" aria-label="Back to main menu" onclick="showMainMenu()">← Back to Main Menu</button>
+      <div class="parking-container">
+        <div class="hero">
+          <h1>Forum Mall Parking - Bangalore</h1>
+          <p>Find and reserve your spot by level. Separate rates for 2-wheelers and 4-wheelers. EV support included.</p>
+        </div>
+        <div class="main-content">
+          <div class="options-bar">
+            <label for="levelSelect">Parking Level:</label>
+            <select id="levelSelect">
+              <option value="all">All Levels</option>
+              <option value="L1" selected>Level 1</option>
+              <option value="L2">Level 2</option>
+              <option value="L3">Level 3</option>
+            </select>
+            <label for="spotType" style="margin-left:0.5rem">Show:</label>
+            <select id="spotType">
+              <option value="all" selected>All</option>
+              <option value="available">Available</option>
+              <option value="ev">EV Only</option>
+              <option value="occupied">Occupied</option>
+              <option value="reserved">Reserved</option>
+            </select>
+          </div>
+          <div class="indicators">
+            <div class="indicator"><span class="icon"><svg viewBox="0 0 32 32"><circle fill="#2ecc71" cx="16" cy="16" r="16"/><text x="16" y="23" text-anchor="middle" font-size="18" fill="#fff" font-family="Arial" font-weight="bold">P</text></svg></span>Available</div>
+            <div class="indicator"><span class="icon"><svg viewBox="0 0 32 32"><rect fill="#bdc3c7" x="2" y="12" width="28" height="12" rx="4"/><rect x="7" y="9" width="18" height="8" fill="#eee" rx="2"/></svg></span>Occupied</div>
+            <div class="indicator"><span class="icon"><svg viewBox="0 0 32 32"><circle fill="#e74c3c" cx="16" cy="16" r="16"/><text x="16" y="22" text-anchor="middle" font-size="16" fill="#fff" font-weight="bold">L</text></svg></span>Reserved</div>
+            <div class="indicator"><span class="icon"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="#2986cc"/><text x="16" y="23" text-anchor="middle" font-size="18" fill="#fff" font-family="Arial" font-weight="bold">⚡</text></svg></span>EV Charging</div>
+          </div>
+          <div id="mallMap" role="region" aria-label="Forum Mall Parking Map"></div>
+          <div class="booking-btn-row">
+            <span class="spot-status-box" id="selectedSpotBox">No slot selected.</span>
+            <button id="bookSlotBtn" disabled>Book Slot</button>
+          </div>
+          <div id="embeddedBookingContainer"></div>
+          <div class="rates-section">
+            <div class="section-title" style="border:none;">Rates & Facilities</div>
+            <table class="rates-section-table" aria-label="Parking rates">
+              <tr><th></th><th>2 Wheeler</th><th>4 Wheeler</th></tr>
+              <tr><td>First Hour</td><td>₹20/hr</td><td>₹40/hr</td></tr>
+              <tr><td>Each Addl. Hr.</td><td>₹10/hr</td><td>₹20/hr</td></tr>
+              <tr><td>24 Hr Max</td><td>₹120</td><td>₹350</td></tr>
+              <tr><td colspan="3" style="background:#eafaf4">EV charging, wheelchair access available</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="parking-footer">&copy; 2025 Forum Mall Bangalore Parking. All rights reserved.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Food Ordering Section -->
+  <section id="foodSection" class="section" aria-label="Food Ordering Section">
+    <div class="module-frame">
+      <button class="back-btn" aria-label="Back to main menu" onclick="showMainMenu()">← Back to Main Menu</button>
+      <div class="food-container">
+        <div class="food-header">
+          <h1>Central Food Court</h1>
+          <nav class="food-nav">
+            <button id="view-cart-btn">View Cart <span id="cart-item-count">(0)</span></button>
+          </nav>
+        </div>
+        <div class="food-main" id="app-container">
+          <section id="food-courts-section" class="food-section active-section">
+            <h2>Pick a shop</h2>
+            <div id="food-courts-list" class="grid-container"></div>
+          </section>
+
+          <section id="shops-section" class="food-section hidden-section">
+            <button id="back-to-food-courts-btn" class="food-back-button">← Back to Food Court</button>
+            <h2 id="current-food-court-name"></h2>
+            <div id="shops-list" class="grid-container"></div>
+          </section>
+
+          <section id="menu-section" class="food-section hidden-section">
+            <button id="back-to-shops-btn" class="food-back-button">← Back to Main menu</button>
+            <h2 id="current-shop-name"></h2>
+            <p id="current-shop-description"></p>
+            <div id="menu-items-list" class="menu-grid-container"></div>
+          </section>
+
+          <section id="cart-section" class="food-section hidden-section">
+            <button id="back-from-cart-btn" class="food-back-button">← Continue Shopping</button>
+            <h2>Your Cart</h2>
+            <div id="cart-items">
+              <p id="empty-cart-message">Your cart is empty.</p>
+            </div>
+            <div id="cart-summary" class="cart-summary-section hidden-section">
+              <p>Subtotal: <span id="cart-subtotal">₹0.00</span></p>
+              <button id="checkout-btn" class="primary-button">Proceed to Checkout</button>
+            </div>
+          </section>
+
+          <section id="checkout-section" class="food-section hidden-section">
+            <button id="back-to-cart-btn" class="food-back-button">← Back to Cart</button>
+            <h2>Checkout</h2>
+            <form id="checkout-form">
+              <label for="food-name">Name:</label>
+              <input type="text" id="food-name" required>
+              <label for="food-phone">Phone:</label>
+              <input type="tel" id="food-phone" required>
+              <label for="food-address">Delivery Address (Optional):</label>
+              <textarea id="food-address"></textarea>
+              <p>Total Payment: <span id="checkout-total">₹0.00</span></p>
+              <button type="submit" class="primary-button">Place Order</button>
+            </form>
+          </section>
+
+          <section id="order-tracking-section" class="food-section hidden-section">
+            <h2>Order Placed!</h2>
+            <p>Your order ID: <strong id="display-order-id"></strong></p>
+            <p>Status: <span id="order-status">Preparing</span></p>
+            <p>Estimated Ready Time: <span id="estimated-time"></span></p>
+            <button id="new-order-btn" class="primary-button">Start New Order</button>
+          </section>
+        </div>
+        <div class="food-footer">
+          <p>&copy; 2025 Food Court Finder. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Mall Navigation Section -->
+  <section id="navSection" class="section" aria-label="Mall Navigation Section">
+    <div class="module-frame">
+      <button class="back-btn" aria-label="Back to main menu" onclick="showMainMenu()">← Back to Main Menu</button>
+      <div class="header" style="text-align:center;margin-bottom:1rem;">
+        <h2>Forum South Bengaluru</h2>
+        <div style="color:#005A9C;font-size:1.1rem;">Premium Interactive Floor Plan</div>
+      </div>
+      <div style="max-width:900px;margin:auto;height:600px;">
+        <mapplic-map data-json="https://mapplic.com/getMapData?id=DA7RlTGIeNxvdRm5v0Jn" style="height:100%;"></mapplic-map>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Forum Mall Bengaluru. All rights reserved.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script id="mapplic-script" src="https://mapplic.com/mapplic.js"></script>
+  
+  <script>
+    function showMainMenu() {
+      document.getElementById('mainChoice').style.display = 'flex';
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
+    }
+    
+    document.getElementById('goParking').addEventListener('click', () => {
+      document.getElementById('mainChoice').style.display = 'none';
+      document.getElementById('parkingSection').classList.add('active-section');
+      setTimeout(() => {
+        if (typeof initializeParkingMap === 'function') {
+          initializeParkingMap();
+        }
+      }, 100);
+    });
+    
+    document.getElementById('goFood').addEventListener('click', () => {
+      document.getElementById('mainChoice').style.display = 'none';
+      document.getElementById('foodSection').classList.add('active-section');
+      setTimeout(() => {
+        if (typeof initializeFoodCourt === 'function') {
+          initializeFoodCourt();
+        }
+      }, 100);
+    });
+    
+    document.getElementById('goNav').addEventListener('click', () => {
+      document.getElementById('mainChoice').style.display = 'none';
+      document.getElementById('navSection').classList.add('active-section');
+    });
+
+    ['goParking', 'goFood', 'goNav'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
+      });
+    });
+    
+    // Parking functionality
+    function initializeParkingMap() {
+      const mallLat = 12.9346, mallLon = 77.613;
+      
+      if (window.parkingMap) {
+        window.parkingMap.remove();
+      }
+      
+      window.parkingMap = L.map("mallMap", { zoomControl:true }).setView([mallLat, mallLon], 19);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 20, attribution: "© OpenStreetMap Contributors"}).addTo(window.parkingMap);
+
+      const levelSpots = {
+        L1: [
+          { lat: mallLat+0.000055, lng: mallLon-0.000075, title:"A1", status:"available", isEV:false, reservedTime: null },
+          { lat: mallLat+0.000055, lng: mallLon-0.000055, title:"A2", status:"ev", isEV:true, reservedTime: null },
+          { lat: mallLat+0.000055, lng: mallLon-0.000035, title:"A3", status:"occupied", isEV:false, reservedTime: "45 min left" },
+          { lat: mallLat+0.000055, lng: mallLon-0.000015, title:"A4", status:"reserved", isEV:false, reservedTime: "20 min left" }
+        ],
+        L2: [
+          { lat: mallLat+0.00003, lng: mallLon-0.000075, title:"B1", status:"available", isEV:false, reservedTime: null },
+          { lat: mallLat+0.00003, lng: mallLon-0.000055, title:"B2", status:"ev", isEV:true, reservedTime: null },
+          { lat: mallLat+0.00003, lng: mallLon-0.000035, title:"B3", status:"occupied", isEV:false, reservedTime: "15 min left" },
+          { lat: mallLat+0.00003, lng: mallLon-0.000015, title:"B4", status:"reserved", isEV:false, reservedTime: "40 min left" }
+        ],
+        L3: [
+          { lat: mallLat+0.00001, lng: mallLon-0.000073, title:"C1", status:"available", isEV:false, reservedTime: null },
+          { lat: mallLat+0.00001, lng: mallLon-0.000053, title:"C2", status:"ev", isEV:true, reservedTime: null },
+          { lat: mallLat+0.00001, lng: mallLon-0.000033, title:"C3", status:"occupied", isEV:false, reservedTime: "35 min left" },
+          { lat: mallLat+0.00001, lng: mallLon-0.000013, title:"C4", status:"reserved", isEV:false, reservedTime: "50 min left" }
+        ]
+      };
+
+      function getAllLevelsSpots() { return Object.values(levelSpots).flat(); }
+      function getIconSVG(status) {
+        if (status === "available")
+          return L.divIcon({ className: "", html: `<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><circle fill="#2ecc71" cx="16" cy="16" r="16"/><text x="16" y="23" text-anchor="middle" font-size="18" fill="#fff" font-family="Arial" font-weight="bold">P</text></svg>`, iconSize: [30, 30] });
+        if (status === "ev")
+          return L.divIcon({ className: "", html: `<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="16" fill="#2986cc"/><text x="16" y="23" text-anchor="middle" font-size="18" fill="#fff" font-family="Arial" font-weight="bold">⚡</text></svg>`, iconSize: [30, 30] });
+        if (status === "occupied")
+          return L.divIcon({ className: "", html: `<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><rect fill="#bdc3c7" x="2" y="12" width="28" height="12" rx="4"/><rect x="7" y="9" width="18" height="8" fill="#eee" rx="2"/></svg>`, iconSize: [30, 30] });
+        if (status === "reserved")
+          return L.divIcon({ className: "", html: `<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><circle fill="#e74c3c" cx="16" cy="16" r="16"/><text x="16" y="22" text-anchor="middle" font-size="16" fill="#fff" font-weight="bold">L</text></svg>`, iconSize: [30, 30] });
+        return L.divIcon({className: "", html: "", iconSize: [0, 0]});
+      }
+
+      function getColor(status) {
+        if (status === "available") return "#2ecc71";
+        if (status === "ev") return "#2986cc";
+        if (status === "occupied") return "#bdc3c7";
+        if (status === "reserved") return "#e74c3c";
+        return "#555";
+      }
+      function getLabel(status) {
+        if (status === "available") return "Available";
+        if (status === "ev") return "EV Charging";
+        if (status === "occupied") return "Occupied";
+        if (status === "reserved") return "Reserved";
+        return "Unknown";
+      }
+
+      let markers = [];
+      let selectedSpot = null;
+
+      function clearMarkers() {
+        markers.forEach((m) => window.parkingMap.removeLayer(m));
+        markers = [];
+      }
+      function renderMap() {
+        clearMarkers();
+        selectedSpot = null;
+        updateSpotSelectionUI();
+        clearBookingForm();
+        const selectedLevel = document.getElementById("levelSelect").value;
+        const selectedSpotType = document.getElementById("spotType").value;
+        let spots = selectedLevel === "all" ? getAllLevelsSpots() : levelSpots[selectedLevel] || [];
+        if (selectedSpotType !== "all") { spots = spots.filter((s) => s.status === selectedSpotType); }
+        spots.forEach((spot) => {
+          const marker = L.marker([spot.lat, spot.lng], { icon: getIconSVG(spot.status), keyboard:false }).addTo(window.parkingMap);
+          let popupContent = `<b>Spot ${spot.title}${selectedLevel==="all"?"":" - "+selectedLevel}</b><br>Status: <span style="color:${getColor(spot.status)};font-weight:600">${getLabel(spot.status)}</span>`;
+          if(spot.status==="reserved"||spot.status==="occupied") popupContent += `<br>Time left: <em>${spot.reservedTime}</em>`;
+          else if(spot.status==="ev") popupContent += `<br>Charger: Type 2, 22kW`;
+          marker.bindPopup(popupContent);
+          if(spot.status==="available"||spot.status==="ev") {
+            marker.on("click", function() {
+              selectedSpot = { ...spot, level: selectedLevel === "all" ? getLevelOfSpot(spot) : selectedLevel };
+              updateSpotSelectionUI();
+              clearBookingForm();
+            });
+          }
+          markers.push(marker);
+        });
+        if(spots.length) window.parkingMap.fitBounds(spots.map(s=>[s.lat,s.lng]), {maxZoom:19,padding:[50,50]});
+        else window.parkingMap.setView([mallLat, mallLon], 19);
+      }
+      
+      function updateSpotSelectionUI() {
+        const selectedSpotBox = document.getElementById("selectedSpotBox");
+        const bookSlotBtn = document.getElementById("bookSlotBtn");
+        if (selectedSpot) {
+          const iconSVG = getIconSVG(selectedSpot.status).options.html;
+          selectedSpotBox.innerHTML = `${iconSVG} Slot <b>${selectedSpot.title}</b> - Level <b>${selectedSpot.level}</b> (${getLabel(selectedSpot.status)})`;
+          bookSlotBtn.disabled = false;
+        } else {
+          selectedSpotBox.textContent = "No slot selected.";
+          bookSlotBtn.disabled = true;
+        }
+      }
+      function clearBookingForm() {
+        document.getElementById("embeddedBookingContainer").innerHTML = "";
+      }
+      function getLevelOfSpot(spot) {
+        for (const lvl in levelSpots) {
+          if (levelSpots[lvl].some(s => s.title === spot.title)) return lvl;
+        }
+        return "";
+      }
+      function calcTotalCost(vehicleType, startTime, endTime) {
+        if (!vehicleType || !startTime || !endTime) return 0;
+        let start = startTime.split(":");
+        let end = endTime.split(":");
+        let hrs = (+end[0] + +end[1]/60) - (+start[0] + +start[1]/60);
+        if (hrs <= 0 || isNaN(hrs)) hrs = 1;
+        let firstHr = (vehicleType === "2w") ? 20 : 40;
+        let nextHr = (vehicleType === "2w") ? 10 : 20;
+        let totalHrs = Math.ceil(hrs);
+        let total = firstHr + Math.max(0, totalHrs - 1) * nextHr;
+        let dayMax = (vehicleType === "2w") ? 120 : 350;
+        return Math.min(dayMax, total);
+      }
+
+      document.getElementById("bookSlotBtn").addEventListener("click", () => {
+        clearBookingForm();
+        if (!selectedSpot) return;
+        document.getElementById("embeddedBookingContainer").innerHTML = `
+          <form class="booking-form booking-form-wrap" id="innerBookingForm" autocomplete="off">
+            <div style="font-size:1.04rem;font-weight:600;margin-bottom:1rem;color:#1d376d;">
+              Book Spot <span style="color:#224183">${selectedSpot.title}</span> - Level <span style="color:#224183">${selectedSpot.level}</span>
+            </div>
+            <label for="vehicleType">Vehicle Type</label>
+            <select id="vehicleType" name="vehicleType" required>
+              <option value="">Select vehicle</option>
+              <option value="2w">2-Wheeler</option>
+              <option value="4w">4-Wheeler</option>
+            </select>
+            <label>Date of Parking</label>
+            <input id="bookingDate" name="bookingDate" type="date" required min="${new Date().toISOString().split('T')[0]}"/>
+            <div style="display:flex; gap:5%;">
+              <div style="flex:1">
+                <label>Start Time</label>
+                <input id="bookingTime" name="bookingTime" type="time" required/>
+              </div>
+              <div style="flex:1">
+                <label>End Time</label>
+                <input id="endTime" name="endTime" type="time" required/>
+              </div>
+            </div>
+            <label for="rname">Your Name</label>
+            <input id="rname" name="rname" type="text" placeholder="Full Name" required autocomplete="name"/>
+            <label for="rphone">Phone</label>
+            <input id="rphone" name="rphone" type="tel" placeholder="10-digit Phone" pattern="\\d{10}" required autocomplete="tel"/>
+            <label for="rplate">License Plate</label>
+            <input id="rplate" name="rplate" type="text" placeholder="KA-01-AB-1234" required autocomplete="off"/>
+            <label for="paymethod">Payment Method</label>
+            <select id="paymethod" required>
+              <option value="">Choose method</option>
+              <option value="cash">Cash at Gate</option>
+              <option value="upi">UPI at Gate</option>
+            </select>
+            <div class="cost-row" id="costDisplay">Total Cost: --</div>
+            <button type="submit">Confirm Booking</button>
+            <div id="formResultMsg" tabindex="-1" class="booking-success" style="display:none;"></div>
+          </form>
+        `;
+        const costDisplay = document.getElementById("costDisplay");
+        function updateCost() {
+          const vt = document.getElementById("vehicleType").value;
+          const st = document.getElementById("bookingTime").value;
+          const et = document.getElementById("endTime").value;
+          if (vt && st && et) {
+            const cost = calcTotalCost(vt, st, et);
+            costDisplay.textContent = "Total Cost: ₹"+cost;
+          } else {
+            costDisplay.textContent = "Total Cost: --";
+          }
+        }
+        document.getElementById("vehicleType").addEventListener("change", updateCost);
+        document.getElementById("bookingTime").addEventListener("change", updateCost);
+        document.getElementById("endTime").addEventListener("change", updateCost);
+
+        document.getElementById("innerBookingForm").addEventListener("submit", function(e){
+          e.preventDefault();
+          document.getElementById("formResultMsg").style.display = "block";
+          document.getElementById("formResultMsg").textContent =
+            "Booking confirmed! Slot reserved. Show confirmation at mall gate & pay by your chosen method.";
+          document.getElementById("formResultMsg").focus();
+        });
+      });
+
+      document.getElementById("levelSelect").addEventListener("change", renderMap);
+      document.getElementById("spotType").addEventListener("change", renderMap);
+      renderMap();
+    }
+
+    // Food Court functionality with ALL restaurants and menus
+    function initializeFoodCourt() {
+      const foodCourtsData = [
+        {
+          id: 'fc1', name: 'MacDonald',
+          image: 'https://i.pinimg.com/1200x/b4/f5/c7/b4f5c70dcc0d6cec680f0f39a96b6903.jpg',
+          description: 'A wide range of affordable and convenient fast food, primarily focusing on hamburgers, fries, chicken, and breakfast items.'
+        },
+        {
+          id: 'fc2', name: 'KFC',
+          image: 'https://i.pinimg.com/736x/ae/24/9e/ae249e35dc344dc998f091f085c833e5.jpg',
+          description: 'A variety of fried chicken products, including buckets of bone-in chicken, chicken burgers, wraps, strips, and sides.'
+        },
+        {
+          id: 'fc3', name: 'Burger King',
+          image: 'https://i.pinimg.com/736x/9f/9a/0d/9f9a0d3febdec85884456dc825e5bdd4.jpg',
+          description: 'A menu centered around flame-grilled burgers, notably the iconic Whopper, along with chicken sandwiches and fries.'
+        },
+        {
+          id: 'fc4', name: 'Taco Bell',
+          image: 'https://i.pinimg.com/736x/85/54/30/855430b05eb44415fc2cec56cdd507c2.jpg',
+          description: 'Mexican-inspired fast food items like tacos, burritos, quesadillas, nachos, and various specialty items.'
+        },
+        {
+          id: 'fc5', name: 'Pizza Hut',
+          image: 'https://i.pinimg.com/1200x/8f/61/c4/8f61c46511fded9f26f51237fe6e0242.jpg',
+          description: 'A wide variety of pizzas, including various crust types, along with sides, pasta, desserts, and drinks.'
+        },
+        {
+          id: 'fc6', name: 'California Burrito',
+          image: 'https://i.pinimg.com/736x/70/28/e5/7028e5d645d84afc88ecd9c28bfa3e69.jpg',
+          description: 'Customizable Mexican meals featuring burritos, tacos, bowls, salads, and nachos with fresh ingredients.'
+        },
+        {
+          id: 'fc7', name: 'Tokyo Bites',
+          image: 'https://i.pinimg.com/736x/c3/10/23/c310234706bcf7e153b45e332db4651b.jpg',
+          description: 'Authentic and fresh sushi rolls, nigiri, and Japanese rice bowls.'
+        },
+        {
+          id: 'fc8', name: 'Taste of Thailand',
+          image: 'https://i.pinimg.com/736x/3c/e1/d6/3ce1d6d1488cc3816b29aebf9adfc531.jpg',
+          description: 'Experience the vibrant and aromatic flavors of traditional Thai cuisine.'
+        },
+        {
+          id: 'fc9', name: 'Spice Route Kitchen',
+          image: 'https://i.pinimg.com/1200x/73/e1/3e/73e13e4645a9a5a0369966a69677c716.jpg',
+          description: 'Embark on a culinary journey through the rich and diverse flavors of authentic Indian cuisine.'
+        }
+      ];
+
+      // Complete shops data with ALL menus
+      const shopsData = {
+        'fc1': [
+          {
+            id: 's101', name: 'Burgers',
+            image: 'https://i.pinimg.com/1200x/0f/10/e7/0f10e7037250818b11bbb91d6375927b.jpg',
+            description: 'Juicy burgers made fresh daily',
+            menu: [
+              { id: 'm1', name: 'Big Mac', price: 280, description: 'Double-decker burger with two beef patties, special sauce, lettuce, cheese, pickles, and onions.', image: 'https://i.pinimg.com/1200x/34/98/b9/3498b9b4f9233d3527146e9d72cfe5e4.jpg' },
+              { id: 'm2', name: 'Quarter Pounder with Cheese', price: 250, description: 'Quarter-pound beef patty with cheese, pickles, and onions on a sesame seed bun.', image: 'https://i.pinimg.com/736x/e3/7e/43/e37e4342a029129c26d582cc397d5a1a.jpg' },
+              { id: 'm3', name: 'McDouble', price: 220, description: 'Double cheeseburger with two beef patties, cheese, pickles, onions, ketchup, and mustard.', image: 'https://i.pinimg.com/1200x/c5/17/95/c517956bf556b1cecf304f0af80989d4.jpg' },
+              { id: 'm4', name: 'Chicken Maharaja Mac', price: 320, description: 'Indian-style chicken burger with special maharaja sauce and fresh vegetables.', image: 'https://i.pinimg.com/736x/45/87/12/4587123f4d2a8b9c1e6f7a2d3c5e8f90.jpg' }
+            ]
+          },
+          {
+            id: 's102', name: 'Fries & Sides',
+            image: 'https://i.pinimg.com/1200x/65/b9/ce/65b9ce6644280b60b72cae780666e15d.jpg',
+            description: 'Crispy sides and healthy options',
+            menu: [
+              { id: 'm5', name: 'World Famous Fries', price: 150, description: 'Golden, crispy, and perfectly salted potato fries.', image: 'https://i.pinimg.com/1200x/b2/79/97/b279971ae445f0c9b435b4639880191e.jpg' },
+              { id: 'm6', name: 'Apple Slices', price: 80, description: 'Fresh, pre-sliced apple pieces with caramel dip.', image: 'https://i.pinimg.com/736x/fd/7c/4a/fd7c4a0c3a74e508b2e5dc2126850be6.jpg' },
+              { id: 'm7', name: 'Chicken McNuggets (6pc)', price: 180, description: 'Tender chicken pieces in crispy coating with dipping sauce.', image: 'https://i.pinimg.com/736x/98/76/54/987654321abcdef123456789.jpg' }
+            ]
+          }
+        ],
+        'fc2': [
+          {
+            id: 's201', name: 'KFC Chicken & More',
+            image: 'https://i.pinimg.com/1200x/68/1f/ff/681fff368f6bac2d3a9a62ed2884290a.jpg',
+            description: 'Finger-lickin good fried chicken and more',
+            menu: [
+              { id: 'k1', name: 'Bucket of Chicken (8 pcs)', price: 899, description: 'KFC\'s iconic original recipe fried chicken, 8 pieces of mixed chicken.', image: 'https://i.pinimg.com/736x/a6/3d/69/a63d69e1b7effc2499f8af3695c05f8f.jpg' },
+              { id: 'k2', name: 'Zinger Burger', price: 280, description: 'Spicy, crispy chicken fillet burger with lettuce and spicy mayo.', image: 'https://i.pinimg.com/736x/3f/27/99/3f27995dd88f41fde79e0eb559aa7e93.jpg' },
+              { id: 'k3', name: 'Popcorn Chicken', price: 199, description: 'Bite-sized crispy chicken pieces, perfect for sharing.', image: 'https://i.pinimg.com/736x/62/86/e9/6286e9e7db3421508ce515a0dc6c979c.jpg' },
+              { id: 'k4', name: 'KFC Fries', price: 120, description: 'Classic salted fries, crispy on the outside, fluffy inside.', image: 'https://i.pinimg.com/736x/1c/df/ab/1cdfab7c55e1b66cd7559f71a511981d.jpg' },
+              { id: 'k5', name: 'Hot Wings (6pc)', price: 250, description: 'Spicy chicken wings with KFC\'s signature hot sauce.', image: 'https://i.pinimg.com/736x/ab/cd/ef/abcdef123456789012345678.jpg' }
+            ]
+          }
+        ],
+        'fc3': [
+          {
+            id: 's301', name: 'Burger King Burgers & Sides',
+            image: 'https://i.pinimg.com/736x/f8/0e/27/f80e2759429d86530f5d86e1c901c13c.jpg',
+            description: 'Flame-grilled burgers and crispy sides',
+            menu: [
+              { id: 'b1', name: 'Whopper', price: 320, description: 'Iconic flame-grilled beef patty with fresh lettuce, tomato, onion, pickles, and mayo.', image: 'https://i.pinimg.com/1200x/e6/d5/ea/e6d5eafb49987ba10ac78cddd20f0ef0.jpg' },
+              { id: 'b2', name: 'Crispy Chicken Sandwich', price: 290, description: 'Crispy chicken fillet with fresh lettuce and creamy mayo on a sesame bun.', image: 'https://i.pinimg.com/1200x/67/70/7b/67707bce2cbd0f40d00b423c10accd3c.jpg' },
+              { id: 'b3', name: 'Onion Rings', price: 160, description: 'Golden-brown, crispy onion rings with tangy dipping sauce.', image: 'https://i.pinimg.com/1200x/96/e1/c9/96e1c97e0f5dd8b6b1b83a6838f0203d.jpg' },
+              { id: 'b4', name: 'Veggie Burger', price: 270, description: 'Plant-based patty with fresh vegetables and special sauce.', image: 'https://i.pinimg.com/736x/91/af/93/91af9363bf0dc5a730125e7bbb5d1f69.jpg' },
+              { id: 'b5', name: 'Chicken Royale', price: 300, description: 'Premium chicken breast fillet with lettuce and mayo.', image: 'https://i.pinimg.com/736x/12/34/56/123456789abcdef012345678.jpg' }
+            ]
+          }
+        ],
+        'fc4': [
+          {
+            id: 's401', name: 'Taco Bell Favorites',
+            image: 'https://i.pinimg.com/736x/9d/31/bc/9d31bc0b936585c7a895e5c5f36cd8a8.jpg',
+            description: 'Mexican-inspired fast food favorites',
+            menu: [
+              { id: 't1', name: 'Crunchwrap Supreme', price: 250, description: 'Crispy tostada shell with beef, nacho cheese, lettuce, tomato, and sour cream.', image: 'https://i.pinimg.com/1200x/53/11/fd/5311fd445cad2636d27360661b828dc0.jpg' },
+              { id: 't2', name: 'Cheesy Gordita Crunch', price: 220, description: 'Hard taco shell wrapped in soft flatbread with cheese, beef, and spicy ranch.', image: 'https://i.pinimg.com/1200x/65/9f/95/659f950a074f93ec30d3e03f9c354440.jpg' },
+              { id: 't3', name: 'Nacho Fries', price: 180, description: 'Seasoned fries served with warm nacho cheese sauce for dipping.', image: 'https://i.pinimg.com/736x/62/ed/e1/62ede1ee09a85273e1f723d90e0c067d.jpg' },
+              { id: 't4', name: 'Chicken Quesadilla', price: 290, description: 'Grilled chicken, melted cheese, and creamy jalapeño sauce in a flour tortilla.', image: 'https://i.pinimg.com/736x/ca/6b/60/ca6b60a4ec80c55e6fd21584bbe3bd54.jpg' },
+              { id: 't5', name: 'Mexican Rice Bowl', price: 240, description: 'Seasoned rice with black beans, corn, salsa, and sour cream.', image: 'https://i.pinimg.com/736x/78/90/12/789012345678901234567890.jpg' }
+            ]
+          }
+        ],
+        'fc5': [
+          {
+            id: 's501', name: 'Pizza Hut Pizzas & Sides',
+            image: 'https://i.pinimg.com/736x/44/75/16/4475160d425642ad3fd29aff982fe40b.jpg',
+            description: 'Wide variety of pizzas and delicious sides',
+            menu: [
+              { id: 'p1', name: 'Pepperoni Pizza (Medium)', price: 550, description: 'Classic pizza topped with savory pepperoni and mozzarella cheese.', image: 'https://i.pinimg.com/736x/8e/df/38/8edf38e06ec23680c2249ad67a671a5e.jpg' },
+              { id: 'p2', name: 'Veggie Lovers Pizza (Medium)', price: 500, description: 'Loaded with fresh vegetables including bell peppers, onions, mushrooms, and tomatoes.', image: 'https://i.pinimg.com/736x/cc/89/0d/cc890de4c440950140d79754b8d51544.jpg' },
+              { id: 'p3', name: 'Garlic Breadsticks', price: 180, description: 'Warm breadsticks brushed with garlic butter and herbs.', image: 'https://i.pinimg.com/736x/77/0b/cf/770bcf097fc1266ce0fdb01b68eca6b3.jpg' },
+              { id: 'p4', name: 'Chicken Wings (6 pcs)', price: 350, description: 'Crispy chicken wings with your choice of buffalo or BBQ sauce.', image: 'https://i.pinimg.com/736x/2b/84/f0/2b84f09a4b454176d0b0b369aacd9c52.jpg' },
+              { id: 'p5', name: 'Margherita Pizza (Medium)', price: 450, description: 'Classic Italian pizza with fresh basil, mozzarella, and tomato sauce.', image: 'https://i.pinimg.com/736x/34/56/78/345678901234567890123456.jpg' }
+            ]
+          }
+        ],
+        'fc6': [
+          {
+            id: 's601', name: 'California Burrito Custom Bowls',
+            image: 'https://i.pinimg.com/1200x/89/25/e7/8925e75d080cd13429bfca8fdbba14ce.jpg',
+            description: 'Build your own fresh Mexican meal',
+            menu: [
+              { id: 'cb1', name: 'Chicken Burrito Bowl', price: 380, description: 'Cilantro lime rice, grilled chicken, black beans, salsa, and fresh toppings.', image: 'https://i.pinimg.com/1200x/5e/e2/84/5ee2849b4b71eb26a4067eba6b7a1e98.jpg' },
+              { id: 'cb2', name: 'Veggie Taco (2 pcs)', price: 250, description: 'Soft or hard shell tacos with seasoned vegetables and fresh cilantro.', image: 'https://i.pinimg.com/736x/53/81/77/538177ff403e19da8b1736b6eea53a02.jpg' },
+              { id: 'cb3', name: 'Nachos Supreme', price: 320, description: 'Crispy tortilla chips loaded with cheese, beans, jalapeños, salsa, and sour cream.', image: 'https://i.pinimg.com/736x/ff/88/61/ff8861cf0c27e0c5227667a8b31d3e0c.jpg' },
+              { id: 'cb4', name: 'Paneer Burrito', price: 350, description: 'Indian-style burrito with spiced paneer, rice, beans, and fresh toppings.', image: 'https://i.pinimg.com/1200x/4e/88/a3/4e88a3f9ec22eebb9566607070ebccab.jpg' },
+              { id: 'cb5', name: 'Fish Taco Bowl', price: 400, description: 'Grilled fish with cabbage slaw, avocado, and lime crema over rice.', image: 'https://i.pinimg.com/736x/56/78/90/567890123456789012345678.jpg' }
+            ]
+          }
+        ],
+        'fc7': [
+          {
+            id: 's701', name: 'Sushi & Sashimi',
+            image: 'https://i.pinimg.com/1200x/9a/ae/48/9aae48129f83440cefa035f03591902e.jpg',
+            description: 'Freshly prepared sushi and sashimi',
+            menu: [
+              { id: 'ts1', name: 'Salmon Nigiri (2 Pcs)', price: 280, description: 'Fresh salmon slices over perfectly seasoned sushi rice.', image: 'https://i.pinimg.com/736x/8d/ce/02/8dce022c58c118c64b6e2596d08ebf43.jpg' },
+              { id: 'ts2', name: 'Tuna Nigiri (2 Pcs)', price: 300, description: 'Fresh tuna slices over sushi rice with wasabi and ginger.', image: 'https://i.pinimg.com/736x/97/50/ff/9750ff89ad50c5d426ad0a56c9fa043a.jpg' },
+              { id: 'ts3', name: 'California Roll (8 Pcs)', price: 350, description: 'Crab stick, avocado, cucumber, and roe wrapped in nori and rice.', image: 'https://i.pinimg.com/1200x/1c/67/42/1c6742b02dddb4e968266994740565d6.jpg' },
+              { id: 'ts4', name: 'Spicy Tuna Roll (8 Pcs)', price: 380, description: 'Chopped tuna with spicy mayo and cucumber, topped with sesame seeds.', image: 'https://i.pinimg.com/736x/78/cb/5a/78cb5a81e6c7d9f6b4339c7aaa90d096.jpg' },
+              { id: 'ts5', name: 'Avocado Roll (8 Pcs)', price: 250, description: 'Simple vegetarian roll with fresh avocado and sesame seeds.', image: 'https://i.pinimg.com/1200x/68/25/75/6825758e82ef8ac192c95a2e8ec49d7b.jpg' }
+            ]
+          },
+          {
+            id: 's702', name: 'Japanese Bowls & Sides',
+            image: 'https://i.pinimg.com/1200x/65/09/45/650945021ac704c5a48dbec089658e20.jpg',
+            description: 'Hearty rice bowls and traditional sides',
+            menu: [
+              { id: 'ts6', name: 'Chicken Teriyaki Bowl', price: 420, description: 'Grilled chicken glazed with teriyaki sauce over steamed rice and vegetables.', image: 'https://i.pinimg.com/736x/a6/68/a0/a668a08f315ece554d6c2079c52fe384.jpg' },
+              { id: 'ts7', name: 'Tofu Teriyaki Bowl', price: 380, description: 'Grilled tofu with teriyaki glaze over rice with steamed broccoli.', image: 'https://i.pinimg.com/736x/d5/d3/c1/d5d3c1ec911825c8135b9c0d34a7110f.jpg' },
+              { id: 'ts8', name: 'Edamame', price: 150, description: 'Steamed green soybeans, lightly salted and served warm.', image: 'https://i.pinimg.com/1200x/cf/7b/17/cf7b176f71ee2095cc07e680d03c246a.jpg' },
+              { id: 'ts9', name: 'Miso Soup', price: 120, description: 'Traditional Japanese soybean paste soup with tofu and seaweed.', image: 'https://i.pinimg.com/1200x/af/95/a8/af95a8151cbef4170465b71e77ceab99.jpg' }
+            ]
+          }
+        ],
+        'fc8': [
+          {
+            id: 's801', name: 'Thai Curries & Noodles',
+            image: 'https://i.pinimg.com/736x/17/c2/dd/17c2dd7612b0ae396b5b5af09229725f.jpg',
+            description: 'Authentic Thai curries and popular noodle dishes',
+            menu: [
+              { id: 'tt1', name: 'Green Curry (Chicken)', price: 390, description: 'Spicy green curry with chicken, coconut milk, Thai basil, and bamboo shoots.', image: 'https://i.pinimg.com/736x/9f/a4/c9/9fa4c94286a061ed966d12177790b19d.jpg' },
+              { id: 'tt2', name: 'Red Curry (Veg)', price: 370, description: 'Rich red curry with mixed vegetables, bell peppers, and coconut milk.', image: 'https://i.pinimg.com/1200x/0b/bc/92/0bbc92ba2b2f6fff153caea8bf1a1aca.jpg' },
+              { id: 'tt3', name: 'Pad Thai (Chicken)', price: 380, description: 'Stir-fried rice noodles with chicken, bean sprouts, peanuts, and tamarind sauce.', image: 'https://i.pinimg.com/1200x/21/db/41/21db410a462bb819f59899a4c14cdd36.jpg' },
+              { id: 'tt4', name: 'Pad See Ew (Veg)', price: 360, description: 'Wide rice noodles stir-fried with Chinese broccoli and sweet dark soy sauce.', image: 'https://i.pinimg.com/1200x/c5/5c/9c/c55c9c068701d7ab5c9b19aba291e03c.jpg' }
+            ]
+          },
+          {
+            id: 's802', name: 'Thai Soups & Appetizers',
+            image: 'https://i.pinimg.com/1200x/3d/2a/48/3d2a48b0df4df6fd16c1534dbc9d4449.jpg',
+            description: 'Comforting soups and savory appetizers',
+            menu: [
+              { id: 'tt5', name: 'Tom Yum Goong', price: 290, description: 'Spicy and sour prawn soup with lemongrass, galangal, and lime leaves.', image: 'https://i.pinimg.com/1200x/ee/f1/05/eef105217ec21be94edc328af66a20b2.jpg' },
+              { id: 'tt6', name: 'Tom Kha Gai', price: 280, description: 'Creamy chicken coconut soup with galangal, mushrooms, and herbs.', image: 'https://i.pinimg.com/1200x/f3/27/e6/f327e6108fb24af9719f30853590e520.jpg' },
+              { id: 'tt7', name: 'Veg Spring Rolls (4 Pcs)', price: 180, description: 'Crispy fried vegetable spring rolls served with sweet chili sauce.', image: 'https://i.pinimg.com/736x/29/41/a6/2941a6153669acb5a03c375fd50c54c4.jpg' },
+              { id: 'tt8', name: 'Chicken Satay (3 Skewers)', price: 250, description: 'Grilled chicken skewers marinated in spices, served with peanut sauce.', image: 'https://i.pinimg.com/1200x/bb/b3/13/bbb313a489ccf01fa3b2d2fba1ad6f92.jpg' }
+            ]
+          }
+        ],
+        'fc9': [
+          {
+            id: 's901', name: 'Indian Mains & Breads',
+            image: 'https://i.pinimg.com/1200x/50/52/fa/5052fa67f06d5ff0bfd16275a4f20cb0.jpg',
+            description: 'Classic Indian curries and freshly baked breads',
+            menu: [
+              { id: 'im1', name: 'Paneer Butter Masala', price: 320, description: 'Creamy and rich cottage cheese curry with tomatoes and aromatic spices.', image: 'https://i.pinimg.com/1200x/68/07/08/680708ed76f7f5f90a7f8255b17d8acd.jpg' },
+              { id: 'im2', name: 'Chicken Tikka Masala', price: 380, description: 'Tender chicken tikka in a spiced tomato-cream sauce with herbs.', image: 'https://i.pinimg.com/1200x/18/e2/3e/18e23ebd4e6150549880665c52b8d80a.jpg' },
+              { id: 'im3', name: 'Dal Makhani', price: 280, description: 'Slow-cooked black lentils in a buttery, creamy gravy with spices.', image: 'https://i.pinimg.com/1200x/ef/6e/1b/ef6e1b22f8de024fc8611bc407b6e761.jpg' },
+              { id: 'im4', name: 'Butter Naan', price: 80, description: 'Soft, leavened flatbread brushed with butter and baked in tandoor.', image: 'https://i.pinimg.com/736x/b4/7e/79/b47e7932758272d4f809b7a3192a3a1b.jpg' },
+              { id: 'im5', name: 'Garlic Naan', price: 90, description: 'Soft naan infused with fresh garlic and cilantro.', image: 'https://i.pinimg.com/736x/d1/4e/3d/d14e3d4f9e4a1a26739628d2ced81041.jpg' }
+            ]
+          },
+          {
+            id: 's902', name: 'Biryani & Street Bites',
+            image: 'https://i.pinimg.com/736x/b9/84/a3/b984a39b4f7f5d78243cb5b12cf45751.jpg',
+            description: 'Aromatic rice dishes and popular street food snacks',
+            menu: [
+              { id: 'im6', name: 'Chicken Biryani', price: 450, description: 'Fragrant basmati rice layered with spiced chicken and aromatic herbs.', image: 'https://i.pinimg.com/736x/2b/64/e1/2b64e15ac11687bb3074b9f7abc87edd.jpg' },
+              { id: 'im7', name: 'Vegetable Biryani', price: 390, description: 'Aromatic basmati rice with assorted vegetables, spices, and saffron.', image: 'https://i.pinimg.com/1200x/72/e1/0b/72e10b76ecbfb101cc2b5491f02ed8be.jpg' },
+              { id: 'im8', name: 'Samosa (2 Pcs)', price: 100, description: 'Crispy fried pastry filled with spiced potatoes, peas, and herbs.', image: 'https://i.pinimg.com/1200x/1b/da/ca/1bdaca54b40441bc8a1bccc733e3ca43.jpg' },
+              { id: 'im9', name: 'Pani Puri (6 Pcs)', price: 120, description: 'Crispy hollow puris filled with spiced potatoes and tangy water.', image: 'https://i.pinimg.com/736x/39/25/31/39253186150ccadaad05cabfb0542de0.jpg' },
+              { id: 'im10', name: 'Chole Bhature', price: 250, description: 'Spicy chickpea curry served with fluffy fried bread.', image: 'https://i.pinimg.com/736x/ab/cd/ef/abcdef987654321012345678.jpg' }
+            ]
+          }
+        ]
+      };
+
+      // Initialize all the DOM elements
+      const foodCourtsSection = document.getElementById('food-courts-section');
+      const foodCourtsList = document.getElementById('food-courts-list');
+      const shopsSection = document.getElementById('shops-section');
+      const shopsList = document.getElementById('shops-list');
+      const currentFoodCourtName = document.getElementById('current-food-court-name');
+      const menuSection = document.getElementById('menu-section');
+      const menuItemsList = document.getElementById('menu-items-list');
+      const currentShopName = document.getElementById('current-shop-name');
+      const currentShopDescription = document.getElementById('current-shop-description');
+      const cartSection = document.getElementById('cart-section');
+      const cartItemsContainer = document.getElementById('cart-items');
+      const cartItemCountSpan = document.getElementById('cart-item-count');
+      const cartSubtotalSpan = document.getElementById('cart-subtotal');
+      const emptyCartMessage = document.getElementById('empty-cart-message');
+      const cartSummarySection = document.getElementById('cart-summary');
+      const checkoutSection = document.getElementById('checkout-section');
+      const checkoutTotalSpan = document.getElementById('checkout-total');
+      const checkoutForm = document.getElementById('checkout-form');
+      const orderTrackingSection = document.getElementById('order-tracking-section');
+      const displayOrderId = document.getElementById('display-order-id');
+      const orderStatus = document.getElementById('order-status');
+      const estimatedTime = document.getElementById('estimated-time');
+
+      const backToFoodCourtsBtn = document.getElementById('back-to-food-courts-btn');
+      const backToShopsBtn = document.getElementById('back-to-shops-btn');
+      const viewCartBtn = document.getElementById('view-cart-btn');
+      const backFromCartBtn = document.getElementById('back-from-cart-btn');
+      const backToCartBtn = document.getElementById('back-to-cart-btn');
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const newOrderBtn = document.getElementById('new-order-btn');
+
+      let currentFoodCourtId = null;
+      let currentShopId = null;
+      let cart = [];
+
+      function showSection(sectionToShow) {
+        const sections = document.querySelectorAll('#foodSection .food-section');
+        sections.forEach(section => section.classList.remove('active-section'));
+        sections.forEach(section => section.classList.add('hidden-section'));
+        sectionToShow.classList.remove('hidden-section');
+        sectionToShow.classList.add('active-section');
+      }
+
+      function updateCartCount() {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartItemCountSpan.textContent = `(${totalItems})`;
+      }
+
+      function calculateCartTotal() {
+        return cart.reduce((total, cartItem) => total + (cartItem.item.price * cartItem.quantity), 0);
+      }
+
+      function renderFoodCourts() {
+        foodCourtsList.innerHTML = '';
+        foodCourtsData.forEach(fc => {
+          const card = document.createElement('div');
+          card.classList.add('card');
+          card.innerHTML = `
+            <img src="${fc.image}" alt="${fc.name}">
+            <h3>${fc.name}</h3>
+            <p>${fc.description}</p>
+          `;
+          card.addEventListener('click', () => {
+            currentFoodCourtId = fc.id;
+            renderShops(fc.id, fc.name);
+            showSection(shopsSection);
+          });
+          foodCourtsList.appendChild(card);
+        });
+        showSection(foodCourtsSection);
+      }
+
+      function renderShops(foodCourtId, foodCourtName) {
+        shopsList.innerHTML = '';
+        currentFoodCourtName.textContent = `Menu for ${foodCourtName}`;
+        const shops = shopsData[foodCourtId] || [];
+        
+        shops.forEach(shop => {
+          const card = document.createElement('div');
+          card.classList.add('card');
+          card.innerHTML = `
+            <img src="${shop.image}" alt="${shop.name}">
+            <h3>${shop.name}</h3>
+            <p>${shop.description}</p>
+          `;
+          card.addEventListener('click', () => {
+            currentShopId = shop.id;
+            renderMenu(shop);
+            showSection(menuSection);
+          });
+          shopsList.appendChild(card);
+        });
+      }
+
+      function renderMenu(shop) {
+        menuItemsList.innerHTML = '';
+        currentShopName.textContent = shop.name;
+        currentShopDescription.textContent = shop.description;
+
+        shop.menu.forEach(item => {
+          const menuItemCard = document.createElement('div');
+          menuItemCard.classList.add('menu-item-card');
+          menuItemCard.innerHTML = `
+            <img src="${item.image}" alt="${item.name}">
+            <div class="item-details">
+              <h4>${item.name}</h4>
+              <p>${item.description}</p>
+              <div class="item-price">₹${item.price.toFixed(2)}</div>
+            </div>
+            <button class="add-to-cart-btn" data-item-id="${item.id}" data-shop-id="${shop.id}">Add to Cart</button>
+          `;
+          menuItemsList.appendChild(menuItemCard);
+        });
+
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+          button.addEventListener('click', (event) => {
+            const itemId = event.target.dataset.itemId;
+            const shopId = event.target.dataset.shopId;
+            const shop = shopsData[currentFoodCourtId].find(s => s.id === shopId);
+            const itemToAdd = shop.menu.find(m => m.id === itemId);
+            if (itemToAdd) {
+              addToCart(itemToAdd);
+            }
+          });
+        });
+      }
+
+      function addToCart(item) {
+        const existingItem = cart.find(cartItem => cartItem.item.id === item.id);
+        if (existingItem) {
+          existingItem.quantity++;
+        } else {
+          cart.push({ item: item, quantity: 1 });
+        }
+        updateCartCount();
+        alert(`${item.name} added to cart!`);
+      }
+
+      function renderCart() {
+        cartItemsContainer.innerHTML = '';
+        if (cart.length === 0) {
+          emptyCartMessage.classList.remove('hidden-section');
+          cartSummarySection.classList.add('hidden-section');
+        } else {
+          emptyCartMessage.classList.add('hidden-section');
+          cartSummarySection.classList.remove('hidden-section');
+          cart.forEach(cartItem => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('cart-item');
+            itemDiv.innerHTML = `
+              <div class="cart-item-info">
+                <h4>${cartItem.item.name}</h4>
+                <p>Price: ₹${cartItem.item.price.toFixed(2)}</p>
+              </div>
+              <div class="cart-item-actions">
+                <button class="quantity-btn decrement" data-item-id="${cartItem.item.id}">-</button>
+                <span>${cartItem.quantity}</span>
+                <button class="quantity-btn increment" data-item-id="${cartItem.item.id}">+</button>
+                <button class="remove-from-cart-btn" data-item-id="${cartItem.item.id}">Remove</button>
+              </div>
+              <div class="cart-item-price">₹${(cartItem.item.price * cartItem.quantity).toFixed(2)}</div>
+            `;
+            cartItemsContainer.appendChild(itemDiv);
+          });
+
+          document.querySelectorAll('.decrement').forEach(button => {
+            button.addEventListener('click', (event) => updateCartItemQuantity(event.target.dataset.itemId, -1));
+          });
+          document.querySelectorAll('.increment').forEach(button => {
+            button.addEventListener('click', (event) => updateCartItemQuantity(event.target.dataset.itemId, 1));
+          });
+          document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+            button.addEventListener('click', (event) => removeFromCart(event.target.dataset.itemId));
+          });
+        }
+        cartSubtotalSpan.textContent = `₹${calculateCartTotal().toFixed(2)}`;
+        updateCartCount();
+        showSection(cartSection);
+      }
+
+      function updateCartItemQuantity(itemId, change) {
+        const cartItem = cart.find(item => item.item.id === itemId);
+        if (cartItem) {
+          cartItem.quantity += change;
+          if (cartItem.quantity <= 0) {
+            removeFromCart(itemId);
+          } else {
+            renderCart();
+          }
+        }
+      }
+
+      function removeFromCart(itemId) {
+        cart = cart.filter(cartItem => cartItem.item.id !== itemId);
+        renderCart();
+      }
+
+      function renderCheckout() {
+        checkoutTotalSpan.textContent = `₹${calculateCartTotal().toFixed(2)}`;
+        showSection(checkoutSection);
+      }
+
+      // Event Listeners
+      backToFoodCourtsBtn.addEventListener('click', () => {
+        currentFoodCourtId = null;
+        currentShopId = null;
+        renderFoodCourts();
+      });
+
+      backToShopsBtn.addEventListener('click', () => {
+        const foodCourt = foodCourtsData.find(fc => fc.id === currentFoodCourtId);
+        if (foodCourt) {
+          renderShops(currentFoodCourtId, foodCourt.name);
+          showSection(shopsSection);
+        } else {
+          renderFoodCourts();
+        }
+      });
+
+      viewCartBtn.addEventListener('click', renderCart);
+
+      backFromCartBtn.addEventListener('click', () => {
+        if (currentShopId && currentFoodCourtId) {
+          const shop = shopsData[currentFoodCourtId].find(s => s.id === currentShopId);
+          if (shop) {
+            renderMenu(shop);
+            showSection(menuSection);
+          } else {
+            const foodCourt = foodCourtsData.find(fc => fc.id === currentFoodCourtId);
+            if (foodCourt) {
+              renderShops(currentFoodCourtId, foodCourt.name);
+              showSection(shopsSection);
+            } else {
+              renderFoodCourts();
+            }
+          }
+        } else if (currentFoodCourtId) {
+          const foodCourt = foodCourtsData.find(fc => fc.id === currentFoodCourtId);
+          if (foodCourt) {
+            renderShops(currentFoodCourtId, foodCourt.name);
+            showSection(shopsSection);
+          } else {
+            renderFoodCourts();
+          }
+        } else {
+          renderFoodCourts();
+        }
+      });
+
+      checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) {
+          alert("Your cart is empty. Please add items before checking out.");
+          return;
+        }
+        renderCheckout();
+      });
+
+      backToCartBtn.addEventListener('click', renderCart);
+
+      checkoutForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = document.getElementById('food-name').value;
+        const phone = document.getElementById('food-phone').value;
+        const address = document.getElementById('food-address').value;
+        const total = calculateCartTotal();
+
+        const orderId = 'ORD' + Math.floor(Math.random() * 100000);
+        const estimatedTimeMinutes = Math.floor(Math.random() * (45 - 20 + 1)) + 20;
+
+        displayOrderId.textContent = orderId;
+        orderStatus.textContent = 'Preparing';
+        estimatedTime.textContent = `${estimatedTimeMinutes} minutes`;
+
+        cart = [];
+        updateCartCount();
+
+        alert('Order placed successfully!');
+        showSection(orderTrackingSection);
+      });
+
+      newOrderBtn.addEventListener('click', () => {
+        currentFoodCourtId = null;
+        currentShopId = null;
+        renderFoodCourts();
+      });
+
+      // Initialize food court
+      renderFoodCourts();
+    }
+    
+    showMainMenu();
+  </script>
+</body>
+</html>
